@@ -45,18 +45,18 @@ public class PincodeActivity extends AppCompatActivity {
         public void run() {
             // Delayed removal of status and navigation bar
             if (Build.VERSION.SDK_INT >= 30) {
-                mContentView.getWindowInsetsController().hide(
-                        WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+//                mContentView.getWindowInsetsController().hide(
+//                        WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
             } else {
                 // Note that some of these constants are new as of API 16 (Jelly Bean)
                 // and API 19 (KitKat). It is safe to use them, as they are inlined
                 // at compile-time and do nothing on earlier devices.
-                mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
-                        | View.SYSTEM_UI_FLAG_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+//                mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
+//                        | View.SYSTEM_UI_FLAG_FULLSCREEN
+//                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+//                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+//                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+//                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
             }
         }
     };
@@ -112,21 +112,21 @@ public class PincodeActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         mVisible = true;
-        mControlsView = binding.fullscreenContentControls;
-        mContentView = binding.fullscreenContent;
+//        mControlsView = binding.fullscreenContentControls;
+//        mContentView = binding.fullscreenContent;
 
         // Set up the user interaction to manually show or hide the system UI.
-        mContentView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                toggle();
-            }
-        });
-
+//        mContentView.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                //toggle();
+//            }
+//        });
+//
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
-        binding.dummyButton.setOnTouchListener(mDelayHideTouchListener);
+        //binding.dummyButton.setOnTouchListener(mDelayHideTouchListener);
     }
 
     @Override
@@ -136,7 +136,7 @@ public class PincodeActivity extends AppCompatActivity {
         // Trigger the initial hide() shortly after the activity has been
         // created, to briefly hint to the user that UI controls
         // are available.
-        delayedHide(100);
+        delayedHide(1);
     }
 
     private void toggle() {
@@ -153,7 +153,7 @@ public class PincodeActivity extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.hide();
         }
-        mControlsView.setVisibility(View.GONE);
+//        mControlsView.setVisibility(View.GONE);
         mVisible = false;
 
         // Schedule a runnable to remove the status and navigation bar after a delay
@@ -167,8 +167,8 @@ public class PincodeActivity extends AppCompatActivity {
             mContentView.getWindowInsetsController().show(
                     WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
         } else {
-            mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+//            mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+//                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
         }
         mVisible = true;
 
