@@ -17,6 +17,7 @@ import android.view.WindowInsets;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -25,6 +26,9 @@ import com.android.volley.toolbox.Volley;
 import com.example.tm2.databinding.ActivityPincodeBinding;
 
 import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -189,16 +193,24 @@ public class PincodeActivity extends AppCompatActivity {
 
     private void testPincode(String pinCode) {
 
-        String url = "";
+        String url = "https://ow.apx-service.ru/tech_man/hs/mob/auth/" + pinCode;
         JSONObject jsonObject = new JSONObject();
         Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
 
-                finish();
+                if (!DefaultJson.getString(response, "User", "").isEmpty()){
 
-                Intent intent = new Intent(getBaseContext(), MainActivity.class);
-                startActivity(intent);
+                    finish();
+
+                    Intent intent = new Intent(getBaseContext(), MainActivity.class);
+                    startActivity(intent);
+                } else {
+
+
+
+                }
+
             }
         };
 
@@ -209,8 +221,22 @@ public class PincodeActivity extends AppCompatActivity {
             }
         };
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, jsonObject, listener, errorListener);
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, jsonObject, listener, errorListener){
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
 
+                HashMap headers = new HashMap<String, String>();
+
+                headers.put("Content-Type", "application/json");
+                headers.put("Authorization", "Basic ZXhjaDoxMjM0NTY=");
+
+
+                return headers;
+
+            };
+
+
+        };
         Volley.newRequestQueue(this).add(jsonObjectRequest);
 
     }
