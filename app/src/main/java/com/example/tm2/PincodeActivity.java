@@ -12,6 +12,8 @@ import android.os.Looper;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowInsets;
+import android.widget.Button;
+import android.widget.TextView;
 
 import com.example.tm2.databinding.ActivityPincodeBinding;
 
@@ -104,12 +106,51 @@ public class PincodeActivity extends AppCompatActivity {
     };
     private ActivityPincodeBinding binding;
 
+    private TextView tvPincode;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         binding = ActivityPincodeBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        tvPincode = binding.tvPincode;
+
+        View.OnClickListener onClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                tvPincode.setText(tvPincode.getText() + ((Button) view).getText().toString());
+
+            }
+        };
+
+        binding.button0.setOnClickListener(onClickListener);
+        binding.button1.setOnClickListener(onClickListener);
+        binding.button2.setOnClickListener(onClickListener);
+        binding.button3.setOnClickListener(onClickListener);
+        binding.button4.setOnClickListener(onClickListener);
+        binding.button5.setOnClickListener(onClickListener);
+        binding.button6.setOnClickListener(onClickListener);
+        binding.button7.setOnClickListener(onClickListener);
+        binding.button8.setOnClickListener(onClickListener);
+        binding.button9.setOnClickListener(onClickListener);
+
+        binding.buttonBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                int len = tvPincode.getText().toString().length();
+
+                if (len > 0) {
+
+                    tvPincode.setText(tvPincode.getText().toString().substring(0, len - 1));
+                }
+
+
+            }
+        });
 
         mVisible = true;
 //        mControlsView = binding.fullscreenContentControls;
