@@ -2,6 +2,7 @@ package com.example.tm2;
 
 import android.annotation.SuppressLint;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -16,7 +17,14 @@ import android.view.WindowInsets;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.tm2.databinding.ActivityPincodeBinding;
+
+import org.json.JSONObject;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -157,10 +165,7 @@ public class PincodeActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                finish();
-
-                Intent intent = new Intent(getBaseContext(), MainActivity.class);
-                startActivity(intent);
+                testPincode(tvPincode.getText().toString());
             }
         });
 
@@ -181,6 +186,35 @@ public class PincodeActivity extends AppCompatActivity {
         // while interacting with the UI.
         //binding.dummyButton.setOnTouchListener(mDelayHideTouchListener);
     }
+
+    private void testPincode(String pinCode) {
+
+        String url = "";
+        JSONObject jsonObject = new JSONObject();
+        Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+
+                finish();
+
+                Intent intent = new Intent(getBaseContext(), MainActivity.class);
+                startActivity(intent);
+            }
+        };
+
+        Response.ErrorListener errorListener = new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        };
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, jsonObject, listener, errorListener);
+
+        Volley.newRequestQueue(this).add(jsonObjectRequest);
+
+    }
+
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
