@@ -14,6 +14,9 @@ import android.os.Looper;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowInsets;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -169,7 +172,13 @@ public class PincodeActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                testPincode(tvPincode.getText().toString());
+                String pinCode = tvPincode.getText().toString();
+
+                if (!pinCode.isEmpty()){
+                    testPincode(pinCode);
+                }
+
+
             }
         });
 
@@ -207,7 +216,8 @@ public class PincodeActivity extends AppCompatActivity {
                     startActivity(intent);
                 } else {
 
-
+                    Animation animation = AnimationUtils.loadAnimation(getBaseContext(), R.anim.tremble);
+                    binding.llMain.startAnimation(animation);
 
                 }
 
