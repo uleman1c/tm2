@@ -202,9 +202,8 @@ public class PincodeActivity extends AppCompatActivity {
 
     private void testPincode(String pinCode) {
 
-        String url = "https://ow.apx-service.ru/tech_man/hs/mob/auth/" + pinCode;
-        JSONObject jsonObject = new JSONObject();
-        Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
+        RequestToServer.execute(this, Request.Method.GET, "auth/" + pinCode, new JSONObject(), new RequestToServer.ResponseResultInterface(){
+
             @Override
             public void onResponse(JSONObject response) {
 
@@ -214,40 +213,15 @@ public class PincodeActivity extends AppCompatActivity {
 
                     Intent intent = new Intent(getBaseContext(), MainActivity.class);
                     startActivity(intent);
+
                 } else {
 
                     Animation animation = AnimationUtils.loadAnimation(getBaseContext(), R.anim.tremble);
                     binding.llMain.startAnimation(animation);
 
                 }
-
             }
-        };
-
-        Response.ErrorListener errorListener = new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-
-            }
-        };
-
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, jsonObject, listener, errorListener){
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-
-                HashMap headers = new HashMap<String, String>();
-
-                headers.put("Content-Type", "application/json");
-                headers.put("Authorization", "Basic ZXhjaDoxMjM0NTY=");
-
-
-                return headers;
-
-            };
-
-
-        };
-        Volley.newRequestQueue(this).add(jsonObjectRequest);
+        });
 
     }
 

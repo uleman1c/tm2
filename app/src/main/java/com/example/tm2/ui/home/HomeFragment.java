@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.tm2.DB;
 import com.example.tm2.databinding.FragmentHomeBinding;
 
 public class HomeFragment extends Fragment {
@@ -24,6 +25,12 @@ public class HomeFragment extends Fragment {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
+        DB db = new DB(getContext());
+        db.open();
+        String appId = db.getConstant("appId");
+        db.close();
+
+//        binding.tvId.setText(appId);
         final TextView textView = binding.textHome;
         homeViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
         return root;
