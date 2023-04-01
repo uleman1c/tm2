@@ -1,17 +1,22 @@
 package com.example.tm2.ui.visits;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.icu.text.SimpleDateFormat;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
@@ -30,6 +35,7 @@ import com.example.tm2.Connections;
 import com.example.tm2.DataAdapter;
 import com.example.tm2.DateStr;
 import com.example.tm2.GetFoto;
+import com.example.tm2.GetLocation;
 import com.example.tm2.JsonProcs;
 import com.example.tm2.ListFragment;
 import com.example.tm2.R;
@@ -74,7 +80,7 @@ public class VisitListFragment extends ListFragment<MoversService> {
                     @Override
                     public void onResponse(JSONObject jsonObjectResponse) {
 
-                        if (JsonProcs.getBooleanFromJSON(jsonObjectResponse, "success")){
+                        if (JsonProcs.getBooleanFromJSON(jsonObjectResponse, "success")) {
 
                             JSONArray jsonArrayResponses = JsonProcs.getJsonArrayFromJsonObject(jsonObjectResponse, "responses");
 
@@ -148,30 +154,43 @@ public class VisitListFragment extends ListFragment<MoversService> {
 
                         bundle.putString("record", new JSONArray(moversService.getObjectDescription()).toString());
 
-                        File file = GetFoto.createImageFile(getContext());
+                        GetLocation getLocation = new GetLocation(getContext(), new GetLocation.OnLocationChanged() {
+                            @Override
+                            public void execute(android.location.Location location) {
 
-                        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                        intent.putExtra(MediaStore.EXTRA_OUTPUT, GetFoto.uriFromFile(getContext(), file));
+                                double latitude = location.getLatitude();
+                                double longitude = location.getLongitude();
+                                String msg = "New Latitude: " + latitude + "New Longitude: " + longitude;
+                                //Toast.makeText(mContext, msg, Toast.LENGTH_LONG).show();
 
-                        activityLauncher.launch(intent, result -> {
-                            if (result.getResultCode() == Activity.RESULT_OK) {
+                                File file = GetFoto.createImageFile(getContext());
 
-                                Bitmap bitmap = GetFoto.bitmapFromFile(file);
+                                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                                intent.putExtra(MediaStore.EXTRA_OUTPUT, GetFoto.uriFromFile(getContext(), file));
 
-                                String url = Connections.addrFiles + "doc/ПосещениеКонтрагента/"
-                                        + UUID.randomUUID().toString() + "/" + UUID.randomUUID().toString() + ".jpg";
+                                activityLauncher.launch(intent, result -> {
+                                    if (result.getResultCode() == Activity.RESULT_OK) {
 
-                                RequestToServer.uploadBitmap(getContext(), url, bitmap, new RequestToServer.ResponseResultInterface() {
-                                    @Override
-                                    public void onResponse(JSONObject response) {
+                                        Bitmap bitmap = GetFoto.bitmapFromFile(file);
+
+                                        String url = Connections.addrFiles + "doc/ПосещениеКонтрагента/"
+                                                + UUID.randomUUID().toString() + "/" + UUID.randomUUID().toString() + ".jpg";
+
+                                        RequestToServer.uploadBitmap(getContext(), url, bitmap, new RequestToServer.ResponseResultInterface() {
+                                            @Override
+                                            public void onResponse(JSONObject response) {
+
+                                            }
+                                        });
 
                                     }
                                 });
 
+                                //navController.navigate(R.id.nav_MoversServiceRecordFragment, bundle);
+
                             }
                         });
 
-                        //navController.navigate(R.id.nav_MoversServiceRecordFragment, bundle);
 
                     }
                 });
@@ -182,8 +201,6 @@ public class VisitListFragment extends ListFragment<MoversService> {
         });
 
     }
-
-
 
 
 }
