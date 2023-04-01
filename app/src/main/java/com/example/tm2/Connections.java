@@ -9,6 +9,7 @@ public class Connections {
 
     public static String addr = "https://ow.apx-service.ru/tech_man/hs/mob/";
     public static String addrDta = "https://ow.apx-service.ru/tech_man/hs/dta/obj/";
+    public static String addrFiles = "https://ow.apx-service.ru/tech_man/hs/dta/files/";
 
     public static Map<String, String> headers() {
 

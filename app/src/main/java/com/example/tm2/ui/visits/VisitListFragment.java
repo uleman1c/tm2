@@ -1,14 +1,18 @@
 package com.example.tm2.ui.visits;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.icu.text.SimpleDateFormat;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 
@@ -25,6 +29,7 @@ import com.example.tm2.ActivityForResult;
 import com.example.tm2.Connections;
 import com.example.tm2.DataAdapter;
 import com.example.tm2.DateStr;
+import com.example.tm2.GetFoto;
 import com.example.tm2.JsonProcs;
 import com.example.tm2.ListFragment;
 import com.example.tm2.R;
@@ -36,10 +41,14 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -139,16 +148,20 @@ public class VisitListFragment extends ListFragment<MoversService> {
 
                         bundle.putString("record", new JSONArray(moversService.getObjectDescription()).toString());
 
+                        File file = GetFoto.createImageFile(getContext());
+
                         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, GetFoto.uriFromFile(getContext(), file));
 
                         activityLauncher.launch(intent, result -> {
                             if (result.getResultCode() == Activity.RESULT_OK) {
 
-                                Intent data = result.getData();
+                                Bitmap bitmap = GetFoto.bitmapFromFile(file);
 
-                                Bitmap thumbnail = (Bitmap) data.getExtras().get("data");
+                                String url = Connections.addrFiles + "doc/ПосещениеКонтрагента/"
+                                        + UUID.randomUUID().toString() + "/" + UUID.randomUUID().toString() + ".jpg";
 
-                                RequestToServer.uploadBitmap(getContext(), "", thumbnail, new RequestToServer.ResponseResultInterface() {
+                                RequestToServer.uploadBitmap(getContext(), url, bitmap, new RequestToServer.ResponseResultInterface() {
                                     @Override
                                     public void onResponse(JSONObject response) {
 
@@ -168,17 +181,6 @@ public class VisitListFragment extends ListFragment<MoversService> {
             }
         });
 
-    }
-
-    public void openSomeActivityForResult() {
-//        Intent intent = new Intent(this, SomeActivity.class);
-//        activityLauncher.launch(intent, result -> {
-//            if (result.getResultCode() == Activity.RESULT_OK) {
-//                // There are no request codes
-//                Intent data = result.getData();
-//                doSomeOperations();
-//            }
-//        });
     }
 
 

@@ -67,12 +67,13 @@ public class RequestToServer {
     public static byte[] getFileDataFromDrawable(Bitmap bitmap) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 90, byteArrayOutputStream);
+
         return byteArrayOutputStream.toByteArray();
     }
 
     public static void uploadBitmap(Context context, String url, final Bitmap bitmap, ResponseResultInterface responseResultInterface) {
 
-        VolleyMultipartRequest volleyMultipartRequest = new VolleyMultipartRequest(Request.Method.POST, url,
+        VolleyRawRequest volleyMultipartRequest = new VolleyRawRequest(Request.Method.POST, url,
                 new Response.Listener<NetworkResponse>() {
                     @Override
                     public void onResponse(NetworkResponse response) {
@@ -103,6 +104,11 @@ public class RequestToServer {
                 long imagename = System.currentTimeMillis();
                 params.put("image", new DataPart(imagename + ".jpg", getFileDataFromDrawable(bitmap)));
                 return params;
+            }
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                return Connections.headers();
             }
         };
 
