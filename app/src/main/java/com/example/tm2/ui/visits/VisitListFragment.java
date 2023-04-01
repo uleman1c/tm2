@@ -13,6 +13,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.android.volley.Request;
+import com.example.tm2.Connections;
 import com.example.tm2.DataAdapter;
 import com.example.tm2.DateStr;
 import com.example.tm2.JsonProcs;
@@ -43,7 +44,9 @@ public class VisitListFragment extends ListFragment<MoversService> {
 
                 items.clear();
 
-                RequestToServer.execute(getContext(), Request.Method.GET, "", new JSONObject(), new RequestToServer.ResponseResultInterface() {
+                String url = Connections.addrDta + "?request=getVisits&userId=" + arguments.getString("id") + "&filter=" + filter;
+
+                RequestToServer.execute(getContext(), Request.Method.GET, url, new JSONObject(), new RequestToServer.ResponseResultInterface() {
                     @Override
                     public void onResponse(JSONObject jsonObjectResponse) {
 
@@ -62,6 +65,8 @@ public class VisitListFragment extends ListFragment<MoversService> {
                                 items.add(MoversService.MoversServiceFromJson(objectItem));
 
                             }
+
+                            progressBar.setVisibility(View.GONE);
 
                             adapter.notifyDataSetChanged();
 

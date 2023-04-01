@@ -57,7 +57,7 @@ public class ListFragment<T> extends Fragment {
 
     private ListUpdater listUpdater;
 
-    private Bundle arguments;
+    public Bundle arguments;
 
 //    public void setInitViewsMaker(DataAdapter.InitViewsMaker initViewsMaker) {
 //        this.initViewsMaker = initViewsMaker;

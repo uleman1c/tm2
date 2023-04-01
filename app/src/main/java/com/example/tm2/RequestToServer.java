@@ -42,7 +42,7 @@ public class RequestToServer {
             }
         };
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(method, Connections.addr + url, params, listener, errorListener){
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(method, url, params, listener, errorListener){
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
 

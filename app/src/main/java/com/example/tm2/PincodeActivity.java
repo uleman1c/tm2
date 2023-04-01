@@ -202,7 +202,7 @@ public class PincodeActivity extends AppCompatActivity {
 
     private void testPincode(String pinCode) {
 
-        RequestToServer.execute(this, Request.Method.GET, "auth/" + pinCode, new JSONObject(), new RequestToServer.ResponseResultInterface(){
+        RequestToServer.execute(this, Request.Method.GET, Connections.addr + "auth/" + pinCode, new JSONObject(), new RequestToServer.ResponseResultInterface(){
 
             @Override
             public void onResponse(JSONObject response) {

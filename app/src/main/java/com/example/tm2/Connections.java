@@ -8,6 +8,7 @@ import java.util.Map;
 public class Connections {
 
     public static String addr = "https://ow.apx-service.ru/tech_man/hs/mob/";
+    public static String addrDta = "https://ow.apx-service.ru/tech_man/hs/dta/obj/";
 
     public static Map<String, String> headers() {
 
