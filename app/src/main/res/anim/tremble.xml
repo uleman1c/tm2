@@ -17,25 +17,4 @@
         android:startOffset="100"
         />
 
-    <!--    <translate-->
-<!--        android:duration="100"-->
-<!--        android:fillAfter="true"-->
-<!--        android:fromXDelta="0"-->
-<!--        android:toXDelta="-50"/>-->
-
-<!--    <translate-->
-
-<!--        android:duration="100"-->
-<!--        android:fillAfter="true"-->
-<!--        android:fromXDelta="0"-->
-<!--        android:toXDelta="50"/>-->
-
-<!--    <translate-->
-
-<!--        android:duration="100"-->
-<!--        android:fillAfter="true"-->
-<!--        android:fromXDelta="0"-->
-<!--        android:toXDelta="-50"/>-->
-
-
 </set>
