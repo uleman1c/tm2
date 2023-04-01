@@ -9,8 +9,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.ui.NavigationUI;
 
 import com.example.tm2.DB;
+import com.example.tm2.R;
 import com.example.tm2.databinding.FragmentHomeBinding;
 
 public class HomeFragment extends Fragment {
@@ -38,8 +42,21 @@ public class HomeFragment extends Fragment {
 
             id = bundle.getString("id");
             binding.tvFio.setText(bundle.getString("name"));
+
+            bundle.putString("appId", appId);
         }
 
+        binding.btnVisits.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                NavController navController = Navigation.findNavController(getActivity(), R.id.nav_host_fragment_content_main);
+
+                navController.navigate(R.id.visitListFragment, bundle);
+
+
+            }
+        });
 
 //        binding.tvId.setText(appId);
 //        final TextView textView = binding.textHome;

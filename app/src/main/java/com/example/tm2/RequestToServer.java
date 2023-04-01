@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class RequestToServer {
 
-     interface ResponseResultInterface{
+     public interface ResponseResultInterface{
 
         void onResponse(JSONObject response);
 

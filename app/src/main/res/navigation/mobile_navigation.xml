@@ -22,4 +22,9 @@
         android:name="com.example.tm2.ui.slideshow.SlideshowFragment"
         android:label="@string/menu_slideshow"
         tools:layout="@layout/fragment_slideshow" />
+    <fragment
+        android:id="@+id/visitListFragment"
+        android:name="com.example.tm2.ui.visits.VisitListFragment"
+        android:label="Посещения"
+        tools:layout="@layout/fragment_visit_list" />
 </navigation>

@@ -1,66 +1,134 @@
 package com.example.tm2.ui.visits;
 
+import android.icu.text.SimpleDateFormat;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
+import com.android.volley.Request;
+import com.example.tm2.DataAdapter;
+import com.example.tm2.DateStr;
+import com.example.tm2.JsonProcs;
+import com.example.tm2.ListFragment;
 import com.example.tm2.R;
+import com.example.tm2.RequestToServer;
+import com.example.tm2.objects.MoversService;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link VisitListFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class VisitListFragment extends Fragment {
+import org.json.JSONArray;
+import org.json.JSONObject;
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
+import java.util.UUID;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+public class VisitListFragment extends ListFragment<MoversService> {
+
 
     public VisitListFragment() {
-        // Required empty public constructor
+
+        super(R.layout.fragment_filter_add_list, R.layout.visit_list_item);
+
+        setListUpdater(new ListUpdater() {
+            @Override
+            public void update(ArrayList items, ProgressBar progressBar, DataAdapter adapter, String filter) {
+
+                items.clear();
+
+                RequestToServer.execute(getContext(), Request.Method.GET, "", new JSONObject(), new RequestToServer.ResponseResultInterface() {
+                    @Override
+                    public void onResponse(JSONObject jsonObjectResponse) {
+
+                        if (JsonProcs.getBooleanFromJSON(jsonObjectResponse, "success")){
+
+                            JSONArray jsonArrayResponses = JsonProcs.getJsonArrayFromJsonObject(jsonObjectResponse, "responses");
+
+                            JSONObject jsonObjectItem = JsonProcs.getItemJSONArray(jsonArrayResponses, 0);
+
+                            JSONArray jsonArrayObjects = JsonProcs.getJsonArrayFromJsonObject(jsonObjectItem, "MoversService");
+
+                            for (int j = 0; j < jsonArrayObjects.length(); j++) {
+
+                                JSONObject objectItem = JsonProcs.getItemJSONArray(jsonArrayObjects, j);
+
+                                items.add(MoversService.MoversServiceFromJson(objectItem));
+
+                            }
+
+                            adapter.notifyDataSetChanged();
+
+                        }
+                    }
+                });
+
+            }
+        });
+
+
+        setOnCreateViewElements(new OnCreateViewElements() {
+            @Override
+            public void execute(View root, NavController navController) {
+
+                getAdapter().setInitViewsMaker(new DataAdapter.InitViewsMaker() {
+                    @Override
+                    public void init(View itemView, ArrayList<TextView> textViews) {
+
+                        textViews.add(itemView.findViewById(R.id.tvNumberDate));
+                        textViews.add(itemView.findViewById(R.id.tvDescription));
+                        textViews.add(itemView.findViewById(R.id.tvStatus));
+                    }
+                });
+
+                getAdapter().setDrawViewHolder(new DataAdapter.DrawViewHolder<MoversService>() {
+                    @Override
+                    public void draw(DataAdapter.ItemViewHolder holder, MoversService document) {
+
+                        ((TextView) holder.getTextViews().get(0)).setText("№ " + document.number + " от " + DateStr.FromYmdhmsToDmyhms(document.date)
+                                + ", c " + DateStr.FromYmdhmsToDmyhms(document.start)
+                                + " по " + DateStr.FromYmdhmsToDmyhms(document.finish));
+                        ((TextView) holder.getTextViews().get(1)).setText("Количество: " + String.valueOf(document.quantity) + " на сумму " + String.valueOf(document.sum));
+                        ((TextView) holder.getTextViews().get(2)).setText("Комментарий: " + document.comment);
+                    }
+                });
+
+                root.findViewById(R.id.btnAdd).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                        Bundle bundle = new Bundle();
+
+                        TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
+
+                        Calendar calendar = new GregorianCalendar();
+                        calendar.roll(Calendar.HOUR_OF_DAY, timeZone.getRawOffset() / (3600 * 1000));
+
+                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+
+
+                        MoversService moversService = new MoversService(UUID.randomUUID().toString(), "",
+                                simpleDateFormat.format(calendar.getTime()),
+                                "", "", 0, 0.0, "", new ArrayList<>());
+
+                        bundle.putString("record", new JSONArray(moversService.getObjectDescription()).toString());
+
+                        //navController.navigate(R.id.nav_MoversServiceRecordFragment, bundle);
+
+                    }
+                });
+
+
+
+            }
+        });
+
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment VisitListFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static VisitListFragment newInstance(String param1, String param2) {
-        VisitListFragment fragment = new VisitListFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_visit_list, container, false);
-    }
 }
