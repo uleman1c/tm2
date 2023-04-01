@@ -17,22 +17,33 @@ public class HomeFragment extends Fragment {
 
     private FragmentHomeBinding binding;
 
+    private String appId, id;
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         HomeViewModel homeViewModel =
                 new ViewModelProvider(this).get(HomeViewModel.class);
+
+        Bundle bundle = getArguments();
 
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
         DB db = new DB(getContext());
         db.open();
-        String appId = db.getConstant("appId");
+        appId = db.getConstant("appId");
         db.close();
 
+        if (bundle != null){
+
+            id = bundle.getString("id");
+            binding.tvFio.setText(bundle.getString("name"));
+        }
+
+
 //        binding.tvId.setText(appId);
-        final TextView textView = binding.textHome;
-        homeViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
+//        final TextView textView = binding.textHome;
+//        homeViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
         return root;
     }
 

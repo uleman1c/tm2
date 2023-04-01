@@ -212,6 +212,8 @@ public class PincodeActivity extends AppCompatActivity {
                     finish();
 
                     Intent intent = new Intent(getBaseContext(), MainActivity.class);
+                    intent.putExtra("id", DefaultJson.getString(response, "User", ""));
+                    intent.putExtra("name", DefaultJson.getString(response, "UserName", ""));
                     startActivity(intent);
 
                 } else {

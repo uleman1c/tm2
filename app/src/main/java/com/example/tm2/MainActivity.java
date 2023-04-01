@@ -1,5 +1,6 @@
 package com.example.tm2;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Menu;
@@ -25,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Intent intent = getIntent();
+
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -47,6 +50,15 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
+
+        navController.popBackStack();
+
+        Bundle bundle = new Bundle();
+        bundle.putString("id", intent.getStringExtra("id"));
+        bundle.putString("name", intent.getStringExtra("name"));
+
+        navController.navigate(R.id.nav_home, bundle);
+
     }
 
     @Override
