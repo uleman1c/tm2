@@ -15,8 +15,10 @@ import android.os.Bundle;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
@@ -39,6 +41,7 @@ import com.example.tm2.GetLocation;
 import com.example.tm2.JsonProcs;
 import com.example.tm2.ListFragment;
 import com.example.tm2.R;
+import com.example.tm2.RequestPrermission;
 import com.example.tm2.RequestToServer;
 import com.example.tm2.objects.MoversService;
 
@@ -63,7 +66,6 @@ public class VisitListFragment extends ListFragment<MoversService> {
 
     private int REQUEST_CAMERA = 0;
     protected final ActivityForResult<Intent, ActivityResult> activityLauncher = ActivityForResult.registerActivityForResult(this);
-
     public VisitListFragment() {
 
         super(R.layout.fragment_filter_add_list, R.layout.visit_list_item);
@@ -154,42 +156,36 @@ public class VisitListFragment extends ListFragment<MoversService> {
 
                         bundle.putString("record", new JSONArray(moversService.getObjectDescription()).toString());
 
-                        GetLocation getLocation = new GetLocation(getContext(), new GetLocation.OnLocationChanged() {
-                            @Override
-                            public void execute(android.location.Location location) {
-
-                                double latitude = location.getLatitude();
-                                double longitude = location.getLongitude();
-                                String msg = "New Latitude: " + latitude + "New Longitude: " + longitude;
-                                //Toast.makeText(mContext, msg, Toast.LENGTH_LONG).show();
-
-                                File file = GetFoto.createImageFile(getContext());
-
-                                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                                intent.putExtra(MediaStore.EXTRA_OUTPUT, GetFoto.uriFromFile(getContext(), file));
-
-                                activityLauncher.launch(intent, result -> {
-                                    if (result.getResultCode() == Activity.RESULT_OK) {
-
-                                        Bitmap bitmap = GetFoto.bitmapFromFile(file);
-
-                                        String url = Connections.addrFiles + "doc/ПосещениеКонтрагента/"
-                                                + UUID.randomUUID().toString() + "/" + UUID.randomUUID().toString() + ".jpg";
-
-                                        RequestToServer.uploadBitmap(getContext(), url, bitmap, new RequestToServer.ResponseResultInterface() {
-                                            @Override
-                                            public void onResponse(JSONObject response) {
-
-                                            }
-                                        });
-
+                        RequestPrermission requestPrermission =
+                                new RequestPrermission(getContext(), registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                                    if (isGranted) {
+                                        getLovationForVisit();
+                                    } else {
+                                        // Explain to the user that the feature is unavailable because the
+                                        // feature requires a permission that the user has denied. At the
+                                        // same time, respect the user's decision. Don't link to system
+                                        // settings in an effort to convince the user to change their
+                                        // decision.
                                     }
+                                }));
+
+                        requestPrermission.Check(Manifest.permission.ACCESS_COARSE_LOCATION, new RequestPrermission.AfterCheck() {
+                                    @Override
+                                    public void onSuccess() {
+
+                                        requestPrermission.Check(Manifest.permission.ACCESS_FINE_LOCATION, new RequestPrermission.AfterCheck() {
+                                            @Override
+                                            public void onSuccess() {
+
+                                                getLovationForVisit();
+                                            }
+
+                                        });
+                                    }
+
                                 });
 
-                                //navController.navigate(R.id.nav_MoversServiceRecordFragment, bundle);
 
-                            }
-                        });
 
 
                     }
@@ -200,6 +196,45 @@ public class VisitListFragment extends ListFragment<MoversService> {
             }
         });
 
+    }
+
+    private void getLovationForVisit() {
+        GetLocation getLocation = new GetLocation(getContext(), new GetLocation.OnLocationChanged() {
+            @Override
+            public void execute(android.location.Location location) {
+
+                double latitude = location.getLatitude();
+                double longitude = location.getLongitude();
+                String msg = "New Latitude: " + latitude + "New Longitude: " + longitude;
+                //Toast.makeText(mContext, msg, Toast.LENGTH_LONG).show();
+
+                File file = GetFoto.createImageFile(getContext());
+
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, GetFoto.uriFromFile(getContext(), file));
+
+                activityLauncher.launch(intent, result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+
+                        Bitmap bitmap = GetFoto.bitmapFromFile(file);
+
+                        String url = Connections.addrFiles + "doc/ПосещениеКонтрагента/"
+                                + UUID.randomUUID().toString() + "/" + UUID.randomUUID().toString() + ".jpg";
+
+                        RequestToServer.uploadBitmap(getContext(), url, bitmap, new RequestToServer.ResponseResultInterface() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+
+                            }
+                        });
+
+                    }
+                });
+
+                //navController.navigate(R.id.nav_MoversServiceRecordFragment, bundle);
+
+            }
+        });
     }
 
 
