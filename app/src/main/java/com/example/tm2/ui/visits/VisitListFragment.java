@@ -1,11 +1,19 @@
 package com.example.tm2.ui.visits;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.icu.text.SimpleDateFormat;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +21,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.android.volley.Request;
+import com.example.tm2.ActivityForResult;
 import com.example.tm2.Connections;
 import com.example.tm2.DataAdapter;
 import com.example.tm2.DateStr;
@@ -25,6 +34,10 @@ import com.example.tm2.objects.MoversService;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -33,6 +46,8 @@ import java.util.UUID;
 
 public class VisitListFragment extends ListFragment<MoversService> {
 
+    private int REQUEST_CAMERA = 0;
+    protected final ActivityForResult<Intent, ActivityResult> activityLauncher = ActivityForResult.registerActivityForResult(this);
 
     public VisitListFragment() {
 
@@ -124,6 +139,25 @@ public class VisitListFragment extends ListFragment<MoversService> {
 
                         bundle.putString("record", new JSONArray(moversService.getObjectDescription()).toString());
 
+                        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+                        activityLauncher.launch(intent, result -> {
+                            if (result.getResultCode() == Activity.RESULT_OK) {
+
+                                Intent data = result.getData();
+
+                                Bitmap thumbnail = (Bitmap) data.getExtras().get("data");
+
+                                RequestToServer.uploadBitmap(getContext(), "", thumbnail, new RequestToServer.ResponseResultInterface() {
+                                    @Override
+                                    public void onResponse(JSONObject response) {
+
+                                    }
+                                });
+
+                            }
+                        });
+
                         //navController.navigate(R.id.nav_MoversServiceRecordFragment, bundle);
 
                     }
@@ -135,5 +169,19 @@ public class VisitListFragment extends ListFragment<MoversService> {
         });
 
     }
+
+    public void openSomeActivityForResult() {
+//        Intent intent = new Intent(this, SomeActivity.class);
+//        activityLauncher.launch(intent, result -> {
+//            if (result.getResultCode() == Activity.RESULT_OK) {
+//                // There are no request codes
+//                Intent data = result.getData();
+//                doSomeOperations();
+//            }
+//        });
+    }
+
+
+
 
 }
