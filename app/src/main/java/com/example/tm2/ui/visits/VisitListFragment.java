@@ -66,6 +66,18 @@ public class VisitListFragment extends ListFragment<MoversService> {
 
     private int REQUEST_CAMERA = 0;
     protected final ActivityForResult<Intent, ActivityResult> activityLauncher = ActivityForResult.registerActivityForResult(this);
+
+    protected final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+        if (isGranted) {
+            getLovationForVisit();
+        } else {
+            // Explain to the user that the feature is unavailable because the
+            // feature requires a permission that the user has denied. At the
+            // same time, respect the user's decision. Don't link to system
+            // settings in an effort to convince the user to change their
+            // decision.
+        }
+    });
     public VisitListFragment() {
 
         super(R.layout.fragment_filter_add_list, R.layout.visit_list_item);
@@ -156,18 +168,7 @@ public class VisitListFragment extends ListFragment<MoversService> {
 
                         bundle.putString("record", new JSONArray(moversService.getObjectDescription()).toString());
 
-                        RequestPrermission requestPrermission =
-                                new RequestPrermission(getContext(), registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-                                    if (isGranted) {
-                                        getLovationForVisit();
-                                    } else {
-                                        // Explain to the user that the feature is unavailable because the
-                                        // feature requires a permission that the user has denied. At the
-                                        // same time, respect the user's decision. Don't link to system
-                                        // settings in an effort to convince the user to change their
-                                        // decision.
-                                    }
-                                }));
+                        RequestPrermission requestPrermission = new RequestPrermission(getContext(), requestPermissionLauncher);
 
                         requestPrermission.Check(Manifest.permission.ACCESS_COARSE_LOCATION, new RequestPrermission.AfterCheck() {
                                     @Override
