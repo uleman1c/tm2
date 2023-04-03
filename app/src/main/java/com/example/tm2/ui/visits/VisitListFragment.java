@@ -46,6 +46,7 @@ import com.example.tm2.R;
 import com.example.tm2.RequestPrermission;
 import com.example.tm2.RequestToServer;
 import com.example.tm2.objects.MoversService;
+import com.example.tm2.objects.Visit;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -64,7 +65,7 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.UUID;
 
-public class VisitListFragment extends ListFragment<MoversService> {
+public class VisitListFragment extends ListFragment<Visit> {
 
     //private LocationCallback locationCallback;
 
@@ -118,17 +119,13 @@ public class VisitListFragment extends ListFragment<MoversService> {
 
                         if (JsonProcs.getBooleanFromJSON(jsonObjectResponse, "success")) {
 
-                            JSONArray jsonArrayResponses = JsonProcs.getJsonArrayFromJsonObject(jsonObjectResponse, "responses");
-
-                            JSONObject jsonObjectItem = JsonProcs.getItemJSONArray(jsonArrayResponses, 0);
-
-                            JSONArray jsonArrayObjects = JsonProcs.getJsonArrayFromJsonObject(jsonObjectItem, "MoversService");
+                            JSONArray jsonArrayObjects = JsonProcs.getJsonArrayFromJsonObject(jsonObjectResponse, "result");
 
                             for (int j = 0; j < jsonArrayObjects.length(); j++) {
 
                                 JSONObject objectItem = JsonProcs.getItemJSONArray(jsonArrayObjects, j);
 
-                                items.add(MoversService.MoversServiceFromJson(objectItem));
+                                items.add(Visit.FromJson(objectItem));
 
                             }
 
@@ -158,13 +155,11 @@ public class VisitListFragment extends ListFragment<MoversService> {
                     }
                 });
 
-                getAdapter().setDrawViewHolder(new DataAdapter.DrawViewHolder<MoversService>() {
+                getAdapter().setDrawViewHolder(new DataAdapter.DrawViewHolder<Visit>() {
                     @Override
-                    public void draw(DataAdapter.ItemViewHolder holder, MoversService document) {
+                    public void draw(DataAdapter.ItemViewHolder holder, Visit document) {
 
-                        ((TextView) holder.getTextViews().get(0)).setText("№ " + document.number + " от " + DateStr.FromYmdhmsToDmyhms(document.date)
-                                + ", c " + DateStr.FromYmdhmsToDmyhms(document.start)
-                                + " по " + DateStr.FromYmdhmsToDmyhms(document.finish));
+                        ((TextView) holder.getTextViews().get(0)).setText("№ " + document.number + " от " + DateStr.FromYmdhmsToDmyhms(document.date));
                         ((TextView) holder.getTextViews().get(1)).setText("Количество: " + String.valueOf(document.quantity) + " на сумму " + String.valueOf(document.sum));
                         ((TextView) holder.getTextViews().get(2)).setText("Комментарий: " + document.comment);
                     }
