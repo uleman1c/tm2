@@ -97,22 +97,21 @@ public class VisitListFragment extends ListFragment<Visit> {
                 JSONArray fields = new JSONArray();
                 fields.put("id");
                 fields.put("date");
+                fields.put("number");
+                fields.put("latitude");
+                fields.put("longitude");
+
+                JSONArray order = new JSONArray();
+                order.put("date desc");
+
+                JSONArray accessFilter = new JSONArray();
+                accessFilter.put("author_id = '" + arguments.get("id").toString() + "'");
 
                 JSONObject table = new JSONObject();
                 JsonProcs.putToJsonObject(table, "name", "visits");
                 JsonProcs.putToJsonObject(table, "fields", fields);
-
-
-
-//                let au = { name: 'available_organizations', fields: [
-//                'available_organization_id'],
-//                accessFilter: ['user_id = \'' + this.user_id + '\'']}
-//
-//                this.executeRequest('gettable', au, 'POST', result => {
-//
-//
-//
-//                String url = Connections.addrDta + "?request=getVisits&userId=" + arguments.getString("id") + "&filter=" + filter;
+                JsonProcs.putToJsonObject(table, "order", order);
+                JsonProcs.putToJsonObject(table, "accessFilter", accessFilter);
 
                 RequestToServer.executeA(getContext(), Request.Method.POST, Connections.addrApo + "gettable", table, new RequestToServer.ResponseResultInterface() {
                     @Override
@@ -161,7 +160,7 @@ public class VisitListFragment extends ListFragment<Visit> {
                     public void draw(DataAdapter.ItemViewHolder holder, Visit document) {
 
                         ((TextView) holder.getTextViews().get(0)).setText("№ " + document.number + " от " + DateStr.FromYmdhmsToDmyhms(document.date));
-                        ((TextView) holder.getTextViews().get(1)).setText("Координаты: " + String.valueOf(document.latitude / 1000000) + " , " + String.valueOf(document.longitude / 1000000));
+                        ((TextView) holder.getTextViews().get(1)).setText("Координаты: " + String.valueOf(document.latitude * 1.0 / 1000000) + ", " + String.valueOf(document.longitude * 1.0 / 1000000));
                         ((TextView) holder.getTextViews().get(2)).setText("Комментарий: " + document.comment);
                     }
                 });
@@ -298,7 +297,7 @@ public class VisitListFragment extends ListFragment<Visit> {
 
                                 RequestToServer.uploadBitmap(getContext(), headers, url, bitmap, response1 ->  {
 
-                                    String asfa = "";
+                                    updateList("");
 
                                 });
 
