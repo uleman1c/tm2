@@ -161,7 +161,7 @@ public class VisitListFragment extends ListFragment<Visit> {
                     public void draw(DataAdapter.ItemViewHolder holder, Visit document) {
 
                         ((TextView) holder.getTextViews().get(0)).setText("№ " + document.number + " от " + DateStr.FromYmdhmsToDmyhms(document.date));
-                        ((TextView) holder.getTextViews().get(1)).setText("Количество: " + String.valueOf(document.quantity) + " на сумму " + String.valueOf(document.sum));
+                        ((TextView) holder.getTextViews().get(1)).setText("Координаты: " + String.valueOf(document.latitude / 1000000) + " , " + String.valueOf(document.longitude / 1000000));
                         ((TextView) holder.getTextViews().get(2)).setText("Комментарий: " + document.comment);
                     }
                 });

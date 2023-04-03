@@ -10,8 +10,8 @@ import java.util.HashMap;
 
 public class Visit {
 
-    public String ref, number, date, comment;
-    public Integer quantity;
+    public String ref, number, date, contractor, author, comment;
+    public Integer latitude, longitude;
     public Double sum;
     public ArrayList<String> containers;
 
@@ -19,16 +19,15 @@ public class Visit {
 
     //public String[][] f = [[]];
 
-    public Visit(String ref, String number, String date, String start, String finish, Integer quantity, Double sum, String comment, ArrayList<String> containers) {
+    public Visit(String ref, String number, String date, String contractor, String author, String comment, Integer latitude, Integer longitude) {
         this.ref = ref;
         this.number = number;
         this.date = date;
-//        this.start = start;
-//        this.finish = finish;
-        this.quantity = quantity;
-        this.sum = sum;
+        this.contractor = contractor;
+        this.author = author;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.comment = comment;
-        this.containers = containers;
 
         this.fields = new ArrayList<>();
 
@@ -101,15 +100,15 @@ public class Visit {
 //            MakeFieldVisible(field);
 //            MakeFieldEdiable(field);
 //            MakeFieldRequired(field);
-
-        } else if (curName.equals("quantity")) {
-
-            field.put("type", "integer");
-            field.put("value", String.valueOf(quantity));
-            field.put("alias", "Количество");
-            MakeFieldVisible(field);
-            MakeFieldEdiable(field);
-            MakeFieldRequired(field);
+//
+//        } else if (curName.equals("quantity")) {
+//
+//            field.put("type", "integer");
+//            field.put("value", String.valueOf(quantity));
+//            field.put("alias", "Количество");
+//            MakeFieldVisible(field);
+//            MakeFieldEdiable(field);
+//            MakeFieldRequired(field);
 
         } else if (curName.equals("sum")) {
 
@@ -173,24 +172,13 @@ public class Visit {
         String ref = JsonProcs.getStringFromJSON(task_item, "ref");
         String number = JsonProcs.getStringFromJSON(task_item, "number");
         String date = JsonProcs.getStringFromJSON(task_item, "date");
-        String start = JsonProcs.getStringFromJSON(task_item, "start");
-        String finish = JsonProcs.getStringFromJSON(task_item, "finish");
-        Integer quantity = JsonProcs.getIntegerFromJSON(task_item, "quantity");
-        Double sum = JsonProcs.getDoubleFromJSON(task_item, "sum");
+        String contractor = JsonProcs.getStringFromJSON(task_item, "contractor");
+        String author = JsonProcs.getStringFromJSON(task_item, "author");
+        Integer latitude = JsonProcs.getIntegerFromJSON(task_item, "latitude");
+        Integer longitude = JsonProcs.getIntegerFromJSON(task_item, "longitude");
         String comment = JsonProcs.getStringFromJSON(task_item, "comment");
-        JSONArray ja_containers = JsonProcs.getJsonArrayFromJsonObject(task_item, "containers");
 
-        ArrayList<String> containers = new ArrayList<>();
-        for (int i = 0; i < ja_containers.length(); i++) {
-
-            //containers.add(JsonProcs.getStringFromJSON( JsonProcs.getItemJSONArray(ja_containers, i) ));
-
-        }
-
-        //date = date.substring(6, 8) + "." + date.substring(4, 6) + "." + date.substring(0, 4);
-
-        return new Visit(ref, number, date, start, finish, quantity, sum, comment, containers);
-
+        return new Visit(ref, number, date, contractor, author, comment, latitude, longitude);
 
     }
 
