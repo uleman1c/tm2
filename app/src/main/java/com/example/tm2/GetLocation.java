@@ -86,7 +86,16 @@ public class GetLocation {
 
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
                     2000,
-                    10, locationListenerGPS);
+                    100, locationListenerGPS);
+
+            locationManager.requestLocationUpdates(LocationManager.FUSED_PROVIDER,
+                    2000,
+                    100, locationListenerGPS);
+
+
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+                    2000,
+                    100, locationListenerGPS);
 
 
         }

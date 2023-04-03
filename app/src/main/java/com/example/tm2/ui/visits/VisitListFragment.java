@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.icu.text.SimpleDateFormat;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.LocationRequest;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -64,12 +65,14 @@ import java.util.UUID;
 
 public class VisitListFragment extends ListFragment<MoversService> {
 
+    //private LocationCallback locationCallback;
+
     private int REQUEST_CAMERA = 0;
     protected final ActivityForResult<Intent, ActivityResult> activityLauncher = ActivityForResult.registerActivityForResult(this);
 
     protected final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
         if (isGranted) {
-            getLovationForVisit();
+            getLocationForVisit();
         } else {
             // Explain to the user that the feature is unavailable because the
             // feature requires a permission that the user has denied. At the
@@ -168,6 +171,15 @@ public class VisitListFragment extends ListFragment<MoversService> {
 
                         bundle.putString("record", new JSONArray(moversService.getObjectDescription()).toString());
 
+
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                            LocationRequest mLocationRequest = new LocationRequest.Builder(1000)
+                                    .setMinUpdateIntervalMillis(500)
+                                    .setMaxUpdateDelayMillis(1000)
+                                    .build();
+                        }
+
+
                         RequestPrermission requestPrermission = new RequestPrermission(getContext(), requestPermissionLauncher);
 
                         requestPrermission.Check(Manifest.permission.ACCESS_COARSE_LOCATION, new RequestPrermission.AfterCheck() {
@@ -178,7 +190,7 @@ public class VisitListFragment extends ListFragment<MoversService> {
                                             @Override
                                             public void onSuccess() {
 
-                                                getLovationForVisit();
+                                                getLocationForVisit();
                                             }
 
                                         });
@@ -199,7 +211,7 @@ public class VisitListFragment extends ListFragment<MoversService> {
 
     }
 
-    private void getLovationForVisit() {
+    private void getLocationForVisit() {
         GetLocation getLocation = new GetLocation(getContext(), new GetLocation.OnLocationChanged() {
             @Override
             public void execute(android.location.Location location) {
