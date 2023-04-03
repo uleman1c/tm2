@@ -35,6 +35,7 @@ import android.widget.TextView;
 import com.android.volley.Request;
 import com.example.tm2.ActivityForResult;
 import com.example.tm2.Connections;
+import com.example.tm2.DB;
 import com.example.tm2.DataAdapter;
 import com.example.tm2.DateStr;
 import com.example.tm2.GetFoto;
@@ -189,15 +190,6 @@ public class VisitListFragment extends ListFragment<MoversService> {
 
                         bundle.putString("record", new JSONArray(moversService.getObjectDescription()).toString());
 
-
-                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-                            LocationRequest mLocationRequest = new LocationRequest.Builder(1000)
-                                    .setMinUpdateIntervalMillis(500)
-                                    .setMaxUpdateDelayMillis(1000)
-                                    .build();
-                        }
-
-
                         RequestPrermission requestPrermission = new RequestPrermission(getContext(), requestPermissionLauncher);
 
                         requestPrermission.Check(Manifest.permission.ACCESS_COARSE_LOCATION, new RequestPrermission.AfterCheck() {
@@ -232,37 +224,87 @@ public class VisitListFragment extends ListFragment<MoversService> {
     private void getLocationForVisit() {
         GetLocation getLocation = new GetLocation(getContext(), new GetLocation.OnLocationChanged() {
             @Override
-            public void execute(android.location.Location location) {
+            public void execute(String id, android.location.Location location) {
 
-                double latitude = location.getLatitude();
-                double longitude = location.getLongitude();
-                String msg = "New Latitude: " + latitude + "New Longitude: " + longitude;
-                //Toast.makeText(mContext, msg, Toast.LENGTH_LONG).show();
+                DB db = new DB(getContext());
+                db.open();
+                String locationId = db.getConstant("locationId");
 
-                File file = GetFoto.createImageFile(getContext());
+                Boolean inProgress = locationId != null && locationId.equals(id);
 
-                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                intent.putExtra(MediaStore.EXTRA_OUTPUT, GetFoto.uriFromFile(getContext(), file));
+                if (!inProgress) {
 
-                activityLauncher.launch(intent, result -> {
-                    if (result.getResultCode() == Activity.RESULT_OK) {
+                    db.updateConstant("locationId", id);
 
-                        Bitmap bitmap = GetFoto.bitmapFromFile(file);
+                }
+                db.close();
 
-                        String url = Connections.addrFiles + "doc/ПосещениеКонтрагента/"
-                                + UUID.randomUUID().toString() + "/" + UUID.randomUUID().toString() + ".jpg";
+                if (!inProgress){
 
-                        RequestToServer.uploadBitmap(getContext(), url, bitmap, new RequestToServer.ResponseResultInterface() {
-                            @Override
-                            public void onResponse(JSONObject response) {
+                    double latitude = location.getLatitude();
+                    double longitude = location.getLongitude();
+
+                    JSONArray fields = new JSONArray();
+                    fields.put("id");
+                    fields.put("date");
+                    fields.put("deleted");
+                    fields.put("contractor_id");
+                    fields.put("author_id");
+                    fields.put("comment");
+                    fields.put("latitude");
+                    fields.put("longitude");
+
+                    JSONObject record = new JSONObject();
+                    JsonProcs.putToJsonObject(record, "id", id);
+                    JsonProcs.putToJsonObject(record, "date", DateStr.NowYmdhms());
+                    JsonProcs.putToJsonObject(record, "deleted", 0);
+                    JsonProcs.putToJsonObject(record, "contractor_id", "00000000-0000-0000-0000-000000000000");
+                    JsonProcs.putToJsonObject(record, "author_id", arguments.get("id").toString());
+                    JsonProcs.putToJsonObject(record, "comment", "");
+                    JsonProcs.putToJsonObject(record, "latitude", (int) (latitude * 1000000));
+                    JsonProcs.putToJsonObject(record, "longitude", (int) (longitude * 1000000));
+
+                    JSONObject table = new JSONObject();
+                    JsonProcs.putToJsonObject(table, "name", "visits");
+                    JsonProcs.putToJsonObject(table, "fields", fields);
+                    JsonProcs.putToJsonObject(table, "record", record);
+
+                    RequestToServer.executeA(getContext(), Request.Method.POST, Connections.addrApo + "insertrecord", table, response -> {
+
+                        String msg = "New Latitude: " + latitude + "New Longitude: " + longitude;
+                        //Toast.makeText(mContext, msg, Toast.LENGTH_LONG).show();
+
+                        File file = GetFoto.createImageFile(getContext());
+
+                        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, GetFoto.uriFromFile(getContext(), file));
+
+                        activityLauncher.launch(intent, result -> {
+                            if (result.getResultCode() == Activity.RESULT_OK) {
+
+                                Bitmap bitmap = GetFoto.bitmapFromFile(file);
+
+                                String url = Connections.addrFiles + "doc/ПосещениеКонтрагента/"
+                                        + UUID.randomUUID().toString() + "/" + UUID.randomUUID().toString() + ".jpg";
+
+                                RequestToServer.uploadBitmap(getContext(), url, bitmap, new RequestToServer.ResponseResultInterface() {
+                                    @Override
+                                    public void onResponse(JSONObject response) {
+
+                                    }
+                                });
 
                             }
                         });
 
-                    }
-                });
+                        //navController.navigate(R.id.nav_MoversServiceRecordFragment, bundle);
 
-                //navController.navigate(R.id.nav_MoversServiceRecordFragment, bundle);
+
+                    });
+
+                }
+
+
 
             }
         });

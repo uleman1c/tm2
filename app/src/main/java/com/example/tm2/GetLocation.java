@@ -13,15 +13,19 @@ import android.provider.Settings;
 
 import androidx.core.app.ActivityCompat;
 
+import java.util.UUID;
+
 public class GetLocation {
 
     private Context context;
     private LocationListener locationListenerGPS;
     private LocationManager locationManager;
 
+    private String id;
+
     public interface OnLocationChanged{
 
-        void execute(android.location.Location location);
+        void execute(String id, android.location.Location location);
 
     }
 
@@ -29,11 +33,12 @@ public class GetLocation {
 
         this.context = context;
 
+
         this.locationListenerGPS = new LocationListener() {
             @Override
             public void onLocationChanged(android.location.Location location) {
 
-                onLocationChanged.execute(location);
+                onLocationChanged.execute(id, location);
 
             }
 
@@ -54,6 +59,8 @@ public class GetLocation {
         };
 
         this.locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+
+        this.id = UUID.randomUUID().toString();
 
         requestLocation();
 
