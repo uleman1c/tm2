@@ -28,10 +28,12 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.tm2.databinding.ActivityPincodeBinding;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -202,18 +204,36 @@ public class PincodeActivity extends AppCompatActivity {
 
     private void testPincode(String pinCode) {
 
-        RequestToServer.execute(this, Request.Method.GET, Connections.addr + "auth/" + pinCode, new JSONObject(), new RequestToServer.ResponseResultInterface(){
+        DB db = new DB(getBaseContext());
+        db.open();
+        String appId = db.getConstant("appId");
+        if (appId == null) {
 
-            @Override
-            public void onResponse(JSONObject response) {
+            appId = UUID.randomUUID().toString();
+            db.updateConstant("appId", appId);
 
-                if (!DefaultJson.getString(response, "User", "").isEmpty()){
+        }
+        db.close();
+
+        JSONObject params = new JSONObject();
+        JsonProcs.putToJsonObject(params, "appId", appId);
+        JsonProcs.putToJsonObject(params, "pincode", pinCode);
+
+        RequestToServer.execute(this, Request.Method.POST, Connections.addrApo + "authpc", params, response -> {
+
+            if (JsonProcs.getBooleanFromJSON(response, "success")){
+
+                JSONArray result = JsonProcs.getJsonArrayFromJsonObject(response, "result");
+
+                if (result.length() > 0){
+
+                    JSONObject juser = JsonProcs.getItemJSONArray(result, 0);
 
                     finish();
 
                     Intent intent = new Intent(getBaseContext(), MainActivity.class);
-                    intent.putExtra("id", DefaultJson.getString(response, "User", ""));
-                    intent.putExtra("name", DefaultJson.getString(response, "UserName", ""));
+                    intent.putExtra("id", DefaultJson.getString(juser, "id", ""));
+                    intent.putExtra("name", DefaultJson.getString(juser, "name", ""));
                     startActivity(intent);
 
                 } else {
@@ -223,6 +243,7 @@ public class PincodeActivity extends AppCompatActivity {
 
                 }
             }
+
         });
 
     }

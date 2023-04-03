@@ -22,6 +22,7 @@ import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class RequestToServer {
 
@@ -63,12 +64,96 @@ public class RequestToServer {
 
 
     }
+    public static void executeA(Context context, int method, String url, JSONObject params, ResponseResultInterface responseResultInterface){
+
+        DB db = new DB(context);
+        db.open();
+        String appId = db.getConstant("appId");
+        db.close();
+
+        JsonProcs.putToJsonObject(params, "appId", appId);
+
+        Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+
+                responseResultInterface.onResponse(response);
+
+            }
+        };
+
+        Response.ErrorListener errorListener = new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        };
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(method, url, params, listener, errorListener){
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+
+                return Connections.headers();
+
+            };
+
+
+        };
+        Volley.newRequestQueue(context).add(jsonObjectRequest);
+
+
+    }
 
     public static byte[] getFileDataFromDrawable(Bitmap bitmap) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 90, byteArrayOutputStream);
 
         return byteArrayOutputStream.toByteArray();
+    }
+
+    public static void uploadBitmap(Context context, Map<String, String> headers, String url, final Bitmap bitmap, ResponseResultInterface responseResultInterface) {
+
+        VolleyRawRequest volleyMultipartRequest = new VolleyRawRequest(Request.Method.POST, url,
+                new Response.Listener<NetworkResponse>() {
+                    @Override
+                    public void onResponse(NetworkResponse response) {
+
+
+                        try {
+
+                            JSONObject obj = new JSONObject(new String(response.data));
+                            responseResultInterface.onResponse(obj);
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(context, error.getMessage(), Toast.LENGTH_LONG).show();
+                        Log.e("GotError",""+error.getMessage());
+                    }
+                }) {
+
+
+            @Override
+            protected Map<String, DataPart> getByteData() {
+                Map<String, DataPart> params = new HashMap<>();
+                long imagename = System.currentTimeMillis();
+                params.put("image", new DataPart(imagename + ".jpg", getFileDataFromDrawable(bitmap)));
+                return params;
+            }
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                return headers;
+            }
+        };
+
+        //adding the request to volley
+        Volley.newRequestQueue(context).add(volleyMultipartRequest);
     }
 
     public static void uploadBitmap(Context context, String url, final Bitmap bitmap, ResponseResultInterface responseResultInterface) {

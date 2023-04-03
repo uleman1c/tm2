@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.icu.text.SimpleDateFormat;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.LocationRequest;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -34,6 +35,7 @@ import android.widget.TextView;
 import com.android.volley.Request;
 import com.example.tm2.ActivityForResult;
 import com.example.tm2.Connections;
+import com.example.tm2.DB;
 import com.example.tm2.DataAdapter;
 import com.example.tm2.DateStr;
 import com.example.tm2.GetFoto;
@@ -44,6 +46,7 @@ import com.example.tm2.R;
 import com.example.tm2.RequestPrermission;
 import com.example.tm2.RequestToServer;
 import com.example.tm2.objects.MoversService;
+import com.example.tm2.objects.Visit;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -59,17 +62,20 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.TimeZone;
 import java.util.UUID;
 
-public class VisitListFragment extends ListFragment<MoversService> {
+public class VisitListFragment extends ListFragment<Visit> {
+
+    //private LocationCallback locationCallback;
 
     private int REQUEST_CAMERA = 0;
     protected final ActivityForResult<Intent, ActivityResult> activityLauncher = ActivityForResult.registerActivityForResult(this);
 
     protected final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
         if (isGranted) {
-            getLovationForVisit();
+            getLocationForVisit();
         } else {
             // Explain to the user that the feature is unavailable because the
             // feature requires a permission that the user has denied. At the
@@ -88,25 +94,39 @@ public class VisitListFragment extends ListFragment<MoversService> {
 
                 items.clear();
 
-                String url = Connections.addrDta + "?request=getVisits&userId=" + arguments.getString("id") + "&filter=" + filter;
+                JSONArray fields = new JSONArray();
+                fields.put("id");
+                fields.put("date");
 
-                RequestToServer.execute(getContext(), Request.Method.GET, url, new JSONObject(), new RequestToServer.ResponseResultInterface() {
+                JSONObject table = new JSONObject();
+                JsonProcs.putToJsonObject(table, "name", "visits");
+                JsonProcs.putToJsonObject(table, "fields", fields);
+
+
+
+//                let au = { name: 'available_organizations', fields: [
+//                'available_organization_id'],
+//                accessFilter: ['user_id = \'' + this.user_id + '\'']}
+//
+//                this.executeRequest('gettable', au, 'POST', result => {
+//
+//
+//
+//                String url = Connections.addrDta + "?request=getVisits&userId=" + arguments.getString("id") + "&filter=" + filter;
+
+                RequestToServer.executeA(getContext(), Request.Method.POST, Connections.addrApo + "gettable", table, new RequestToServer.ResponseResultInterface() {
                     @Override
                     public void onResponse(JSONObject jsonObjectResponse) {
 
                         if (JsonProcs.getBooleanFromJSON(jsonObjectResponse, "success")) {
 
-                            JSONArray jsonArrayResponses = JsonProcs.getJsonArrayFromJsonObject(jsonObjectResponse, "responses");
-
-                            JSONObject jsonObjectItem = JsonProcs.getItemJSONArray(jsonArrayResponses, 0);
-
-                            JSONArray jsonArrayObjects = JsonProcs.getJsonArrayFromJsonObject(jsonObjectItem, "MoversService");
+                            JSONArray jsonArrayObjects = JsonProcs.getJsonArrayFromJsonObject(jsonObjectResponse, "result");
 
                             for (int j = 0; j < jsonArrayObjects.length(); j++) {
 
                                 JSONObject objectItem = JsonProcs.getItemJSONArray(jsonArrayObjects, j);
 
-                                items.add(MoversService.MoversServiceFromJson(objectItem));
+                                items.add(Visit.FromJson(objectItem));
 
                             }
 
@@ -136,13 +156,11 @@ public class VisitListFragment extends ListFragment<MoversService> {
                     }
                 });
 
-                getAdapter().setDrawViewHolder(new DataAdapter.DrawViewHolder<MoversService>() {
+                getAdapter().setDrawViewHolder(new DataAdapter.DrawViewHolder<Visit>() {
                     @Override
-                    public void draw(DataAdapter.ItemViewHolder holder, MoversService document) {
+                    public void draw(DataAdapter.ItemViewHolder holder, Visit document) {
 
-                        ((TextView) holder.getTextViews().get(0)).setText("№ " + document.number + " от " + DateStr.FromYmdhmsToDmyhms(document.date)
-                                + ", c " + DateStr.FromYmdhmsToDmyhms(document.start)
-                                + " по " + DateStr.FromYmdhmsToDmyhms(document.finish));
+                        ((TextView) holder.getTextViews().get(0)).setText("№ " + document.number + " от " + DateStr.FromYmdhmsToDmyhms(document.date));
                         ((TextView) holder.getTextViews().get(1)).setText("Количество: " + String.valueOf(document.quantity) + " на сумму " + String.valueOf(document.sum));
                         ((TextView) holder.getTextViews().get(2)).setText("Комментарий: " + document.comment);
                     }
@@ -178,7 +196,7 @@ public class VisitListFragment extends ListFragment<MoversService> {
                                             @Override
                                             public void onSuccess() {
 
-                                                getLovationForVisit();
+                                                getLocationForVisit();
                                             }
 
                                         });
@@ -199,40 +217,118 @@ public class VisitListFragment extends ListFragment<MoversService> {
 
     }
 
-    private void getLovationForVisit() {
+    private void getLocationForVisit() {
         GetLocation getLocation = new GetLocation(getContext(), new GetLocation.OnLocationChanged() {
             @Override
-            public void execute(android.location.Location location) {
+            public void execute(String id, android.location.Location location) {
 
-                double latitude = location.getLatitude();
-                double longitude = location.getLongitude();
-                String msg = "New Latitude: " + latitude + "New Longitude: " + longitude;
-                //Toast.makeText(mContext, msg, Toast.LENGTH_LONG).show();
+                DB db = new DB(getContext());
+                db.open();
+                String locationId = db.getConstant("locationId");
 
-                File file = GetFoto.createImageFile(getContext());
+                Boolean inProgress = locationId != null && locationId.equals(id);
 
-                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                intent.putExtra(MediaStore.EXTRA_OUTPUT, GetFoto.uriFromFile(getContext(), file));
+                if (!inProgress) {
 
-                activityLauncher.launch(intent, result -> {
-                    if (result.getResultCode() == Activity.RESULT_OK) {
+                    db.updateConstant("locationId", id);
 
-                        Bitmap bitmap = GetFoto.bitmapFromFile(file);
+                }
+                db.close();
 
-                        String url = Connections.addrFiles + "doc/ПосещениеКонтрагента/"
-                                + UUID.randomUUID().toString() + "/" + UUID.randomUUID().toString() + ".jpg";
+                if (!inProgress){
 
-                        RequestToServer.uploadBitmap(getContext(), url, bitmap, new RequestToServer.ResponseResultInterface() {
-                            @Override
-                            public void onResponse(JSONObject response) {
+                    double latitude = location.getLatitude();
+                    double longitude = location.getLongitude();
+
+                    JSONArray fields = new JSONArray();
+                    fields.put("id");
+                    fields.put("date");
+                    fields.put("deleted");
+                    fields.put("contractor_id");
+                    fields.put("author_id");
+                    fields.put("comment");
+                    fields.put("latitude");
+                    fields.put("longitude");
+
+                    JSONObject record = new JSONObject();
+                    JsonProcs.putToJsonObject(record, "id", id);
+                    JsonProcs.putToJsonObject(record, "date", DateStr.NowYmdhms());
+                    JsonProcs.putToJsonObject(record, "deleted", 0);
+                    JsonProcs.putToJsonObject(record, "contractor_id", "00000000-0000-0000-0000-000000000000");
+                    JsonProcs.putToJsonObject(record, "author_id", arguments.get("id").toString());
+                    JsonProcs.putToJsonObject(record, "comment", "");
+                    JsonProcs.putToJsonObject(record, "latitude", (int) (latitude * 1000000));
+                    JsonProcs.putToJsonObject(record, "longitude", (int) (longitude * 1000000));
+
+                    JSONObject table = new JSONObject();
+                    JsonProcs.putToJsonObject(table, "name", "visits");
+                    JsonProcs.putToJsonObject(table, "fields", fields);
+                    JsonProcs.putToJsonObject(table, "record", record);
+
+                    RequestToServer.executeA(getContext(), Request.Method.POST, Connections.addrApo + "insertrecord", table, response -> {
+
+                        String msg = "New Latitude: " + latitude + "New Longitude: " + longitude;
+                        //Toast.makeText(mContext, msg, Toast.LENGTH_LONG).show();
+
+                        File file = GetFoto.createImageFile(getContext());
+
+                        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, GetFoto.uriFromFile(getContext(), file));
+
+                        activityLauncher.launch(intent, result -> {
+                            if (result.getResultCode() == Activity.RESULT_OK) {
+
+                                Bitmap bitmap = GetFoto.bitmapFromFile(file);
+
+                                String url = Connections.addrApo + "upload";
+
+                                HashMap headers = new HashMap<String, String>();
+
+                                String curId = UUID.randomUUID().toString();
+
+                                headers.put("Content-Type", "application/octet-stream");
+                                headers.put("id", curId);
+                                headers.put("parentid", "");
+                                headers.put("filename", curId + ".jpg");
+                                headers.put("part", "0");
+                                headers.put("size", String.valueOf(file.length()));
+                                headers.put("user", arguments.get("id").toString());
+                                headers.put("owner_name", "visits");
+                                headers.put("owner_id", id);
+
+
+//                                var url = conn.addr + "upload";
+//                                req.open("POST", url, true);
+//                                req.setRequestHeader('Content-Type', 'application/octet-stream');
+//                                req.setRequestHeader('id', uuid);
+//                                req.setRequestHeader('parentid', '');
+//                                req.setRequestHeader('filename', encodeURIComponent(curFile.name));
+//                                req.setRequestHeader('part', numPart);
+//                                req.setRequestHeader('size', endindByte - startingByte);
+//                                req.setRequestHeader('user', user);
+//                                req.setRequestHeader('owner_name', owner_name);
+//                                req.setRequestHeader('owner_id', owner_id);
+
+
+
+
+                                RequestToServer.uploadBitmap(getContext(), headers, url, bitmap, response1 ->  {
+
+                                    String asfa = "";
+
+                                });
 
                             }
                         });
 
-                    }
-                });
+                        //navController.navigate(R.id.nav_MoversServiceRecordFragment, bundle);
 
-                //navController.navigate(R.id.nav_MoversServiceRecordFragment, bundle);
+
+                    });
+
+                }
+
+
 
             }
         });
