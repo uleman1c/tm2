@@ -111,6 +111,51 @@ public class RequestToServer {
         return byteArrayOutputStream.toByteArray();
     }
 
+    public static void uploadBitmap(Context context, Map<String, String> headers, String url, final Bitmap bitmap, ResponseResultInterface responseResultInterface) {
+
+        VolleyRawRequest volleyMultipartRequest = new VolleyRawRequest(Request.Method.POST, url,
+                new Response.Listener<NetworkResponse>() {
+                    @Override
+                    public void onResponse(NetworkResponse response) {
+
+
+                        try {
+
+                            JSONObject obj = new JSONObject(new String(response.data));
+                            responseResultInterface.onResponse(obj);
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(context, error.getMessage(), Toast.LENGTH_LONG).show();
+                        Log.e("GotError",""+error.getMessage());
+                    }
+                }) {
+
+
+            @Override
+            protected Map<String, DataPart> getByteData() {
+                Map<String, DataPart> params = new HashMap<>();
+                long imagename = System.currentTimeMillis();
+                params.put("image", new DataPart(imagename + ".jpg", getFileDataFromDrawable(bitmap)));
+                return params;
+            }
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                return headers;
+            }
+        };
+
+        //adding the request to volley
+        Volley.newRequestQueue(context).add(volleyMultipartRequest);
+    }
+
     public static void uploadBitmap(Context context, String url, final Bitmap bitmap, ResponseResultInterface responseResultInterface) {
 
         VolleyRawRequest volleyMultipartRequest = new VolleyRawRequest(Request.Method.POST, url,

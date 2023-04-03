@@ -62,6 +62,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.TimeZone;
 import java.util.UUID;
 
@@ -279,14 +280,42 @@ public class VisitListFragment extends ListFragment<Visit> {
 
                                 Bitmap bitmap = GetFoto.bitmapFromFile(file);
 
-                                String url = Connections.addrFiles + "doc/ПосещениеКонтрагента/"
-                                        + UUID.randomUUID().toString() + "/" + UUID.randomUUID().toString() + ".jpg";
+                                String url = Connections.addrApo + "upload";
 
-                                RequestToServer.uploadBitmap(getContext(), url, bitmap, new RequestToServer.ResponseResultInterface() {
-                                    @Override
-                                    public void onResponse(JSONObject response) {
+                                HashMap headers = new HashMap<String, String>();
 
-                                    }
+                                String curId = UUID.randomUUID().toString();
+
+                                headers.put("Content-Type", "application/octet-stream");
+                                headers.put("id", curId);
+                                headers.put("parentid", "");
+                                headers.put("filename", curId + ".jpg");
+                                headers.put("part", "0");
+                                headers.put("size", String.valueOf(file.length()));
+                                headers.put("user", arguments.get("id").toString());
+                                headers.put("owner_name", "visits");
+                                headers.put("owner_id", id);
+
+
+//                                var url = conn.addr + "upload";
+//                                req.open("POST", url, true);
+//                                req.setRequestHeader('Content-Type', 'application/octet-stream');
+//                                req.setRequestHeader('id', uuid);
+//                                req.setRequestHeader('parentid', '');
+//                                req.setRequestHeader('filename', encodeURIComponent(curFile.name));
+//                                req.setRequestHeader('part', numPart);
+//                                req.setRequestHeader('size', endindByte - startingByte);
+//                                req.setRequestHeader('user', user);
+//                                req.setRequestHeader('owner_name', owner_name);
+//                                req.setRequestHeader('owner_id', owner_id);
+
+
+
+
+                                RequestToServer.uploadBitmap(getContext(), headers, url, bitmap, response1 ->  {
+
+                                    String asfa = "";
+
                                 });
 
                             }
