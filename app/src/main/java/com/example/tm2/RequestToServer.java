@@ -22,6 +22,7 @@ import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class RequestToServer {
 
@@ -32,6 +33,45 @@ public class RequestToServer {
     }
 
     public static void execute(Context context, int method, String url, JSONObject params, ResponseResultInterface responseResultInterface){
+
+        Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+
+                responseResultInterface.onResponse(response);
+
+            }
+        };
+
+        Response.ErrorListener errorListener = new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        };
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(method, url, params, listener, errorListener){
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+
+                return Connections.headers();
+
+            };
+
+
+        };
+        Volley.newRequestQueue(context).add(jsonObjectRequest);
+
+
+    }
+    public static void executeA(Context context, int method, String url, JSONObject params, ResponseResultInterface responseResultInterface){
+
+        DB db = new DB(context);
+        db.open();
+        String appId = db.getConstant("appId");
+        db.close();
+
+        JsonProcs.putToJsonObject(params, "appId", appId);
 
         Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
             @Override

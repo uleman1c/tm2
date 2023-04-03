@@ -91,9 +91,27 @@ public class VisitListFragment extends ListFragment<MoversService> {
 
                 items.clear();
 
-                String url = Connections.addrDta + "?request=getVisits&userId=" + arguments.getString("id") + "&filter=" + filter;
+                JSONArray fields = new JSONArray();
+                fields.put("id");
+                fields.put("date");
 
-                RequestToServer.execute(getContext(), Request.Method.GET, url, new JSONObject(), new RequestToServer.ResponseResultInterface() {
+                JSONObject table = new JSONObject();
+                JsonProcs.putToJsonObject(table, "name", "visits");
+                JsonProcs.putToJsonObject(table, "fields", fields);
+
+
+
+//                let au = { name: 'available_organizations', fields: [
+//                'available_organization_id'],
+//                accessFilter: ['user_id = \'' + this.user_id + '\'']}
+//
+//                this.executeRequest('gettable', au, 'POST', result => {
+//
+//
+//
+//                String url = Connections.addrDta + "?request=getVisits&userId=" + arguments.getString("id") + "&filter=" + filter;
+
+                RequestToServer.executeA(getContext(), Request.Method.POST, Connections.addrApo + "gettable", table, new RequestToServer.ResponseResultInterface() {
                     @Override
                     public void onResponse(JSONObject jsonObjectResponse) {
 
