@@ -296,22 +296,6 @@ public class VisitListFragment extends ListFragment<Visit> {
                                 headers.put("owner_name", "visits");
                                 headers.put("owner_id", id);
 
-
-//                                var url = conn.addr + "upload";
-//                                req.open("POST", url, true);
-//                                req.setRequestHeader('Content-Type', 'application/octet-stream');
-//                                req.setRequestHeader('id', uuid);
-//                                req.setRequestHeader('parentid', '');
-//                                req.setRequestHeader('filename', encodeURIComponent(curFile.name));
-//                                req.setRequestHeader('part', numPart);
-//                                req.setRequestHeader('size', endindByte - startingByte);
-//                                req.setRequestHeader('user', user);
-//                                req.setRequestHeader('owner_name', owner_name);
-//                                req.setRequestHeader('owner_id', owner_id);
-
-
-
-
                                 RequestToServer.uploadBitmap(getContext(), headers, url, bitmap, response1 ->  {
 
                                     String asfa = "";
