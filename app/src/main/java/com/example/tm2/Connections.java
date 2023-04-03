@@ -11,6 +11,8 @@ public class Connections {
     public static String addrDta = "https://ow.apx-service.ru/tech_man/hs/dta/obj/";
     public static String addrFiles = "https://ow.apx-service.ru/tech_man/hs/dta/files/";
 
+    public static String addrApo = "https://apx-srv.ru:8002/upload/";
+
     public static Map<String, String> headers() {
 
         HashMap headers = new HashMap<String, String>();
