@@ -26,7 +26,7 @@ public class DateStr {
         TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
 
         Calendar calendar = new GregorianCalendar();
-        calendar.roll(Calendar.HOUR_OF_DAY, timeZone.getRawOffset() / (3600 * 1000));
+        calendar.roll(Calendar.HOUR_OF_DAY, -timeZone.getRawOffset() / (3600 * 1000));
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 
